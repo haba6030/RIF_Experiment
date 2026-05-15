@@ -239,8 +239,35 @@ timeline.push({
   button_html: '<button class="jspsych-btn" style="font-size:18px;padding:12px 40px;">%choice%</button>'
 });
 
+// Shuffle helper that (a) avoids same item_id appearing in adjacent positions,
+// and (b) optionally guarantees the new order differs from a reference order.
+function shuffleRPOrder(items, differentFrom) {
+  const orderKey = arr => arr.map(t => t.item_id + ':' + t.q_index).join('|');
+  for (let attempt = 0; attempt < 200; attempt++) {
+    const cand = shuffle(items);
+    let adjacentSameItem = false;
+    for (let i = 1; i < cand.length; i++) {
+      if (cand[i].item_id === cand[i-1].item_id) { adjacentSameItem = true; break; }
+    }
+    if (adjacentSameItem) continue;
+    if (differentFrom && orderKey(cand) === orderKey(differentFrom)) continue;
+    return cand;
+  }
+  // Fallback: relax the spacing constraint, keep only the "differ" guarantee.
+  for (let attempt = 0; attempt < 50; attempt++) {
+    const cand = shuffle(items);
+    if (!differentFrom || orderKey(cand) !== orderKey(differentFrom)) return cand;
+  }
+  return shuffle(items);
+}
+
+const rpOrders = [];
 for (let r = 0; r < CONFIG.RP_ROUNDS; r++) {
-  const order = shuffle(rpTrials);
+  rpOrders.push(shuffleRPOrder(rpTrials, r === 0 ? null : rpOrders[r - 1]));
+}
+
+for (let r = 0; r < CONFIG.RP_ROUNDS; r++) {
+  const order = rpOrders[r];
   order.forEach((row, idx) => {
     timeline.push({
       type: jsPsychSurveyText,
