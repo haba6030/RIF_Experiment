@@ -4,6 +4,8 @@
 자기관련성(High = 대학생 / Low = 소상공인) 및 정서가(Positive / Negative)에 따라
 어떻게 달라지는지를 검증한다.
 
+실행 링크: <https://haba6030.github.io/RIF_Experiment/>
+
 ## 프로토콜 (총 약 30–32분)
 
 | # | Phase | Duration | Detail |
@@ -22,7 +24,7 @@
   - `P` → RP+ targets = `{A1, A2, B1, B2}` (positives)
   - `N` → RP+ targets = `{A3, A4, B3, B4}` (negatives)
 - **Within-subjects**:
-  - Self-relevance: High set (A) · Low set (B)
+  - Self-relevance: High set (A, 청년 정책) · Low set (B, 소상공인 정책)
   - RIF role: `RP+` · `RP-` · `NRP` (neutrals `CA1`, `CB1`)
 
 `recall` 데이터의 `rif_role` 칼럼이 분석 시 핵심 contrast.
@@ -43,75 +45,10 @@ experiment/
 └── README.md
 ```
 
-## 로컬 실행
-
-```bash
-cd experiment
-npm install
-node server.js            # http://localhost:3000/
-```
-
-URL 파라미터:
-- `?pid=P01` — 명시적 ID, 마지막 자리 짝/홀에 따라 조건 자동 배정
-- `?cond=P` 또는 `?cond=N` — 조건 강제 (디버깅용)
-
-## 배포: GitHub Pages + Google Apps Script
-
-### 1) GitHub Pages 업로드
-
-```bash
-cd experiment
-git init && git add . && git commit -m "Initial commit"
-git branch -M main
-git remote add origin https://github.com/<USER>/<REPO>.git
-git push -u origin main
-```
-
-GitHub → **Settings → Pages** → Source: `main` / Root → 약 30초 후 라이브.
-
-### 2) Google Sheets + Apps Script 연동
-
-1. Google Drive → 새 Sheets (예: `RIF_Data`)
-2. **Extensions → Apps Script** → 기본 코드 삭제
-3. `experiment/google-apps-script.js` 내용을 **그대로 붙여넣고 저장**
-4. **Deploy → New deployment → Web app**
-   - Execute as: **Me**
-   - Who has access: **Anyone**
-5. 표시된 Web app URL 복사
-6. `experiment/js/experiment.js` 의 `GOOGLE_SCRIPT_URL` 상수에 붙여넣기
-7. `git commit -am "wire GAS" && git push` → GitHub Pages 자동 재배포
-
-### 3) 저장되는 시트
-
-| Sheet | 1 row per | 핵심 칼럼 |
-|---|---|---|
-| `Metadata` | 참가자 | pid · condition · total duration · browser |
-| `Study` | study trial (10) | item_id · set · valence · order_idx |
-| `Distractor` | 2-back trial (~360) | task (distractor1/2) · pos · isTarget · response · rt |
-| `RetrievalPractice` | cloze (32) | round · item_id · q_index · target · response · **match (0/1)** · rt |
-| `FreeRecall` | recall item (10) | item_id · set · valence · **rif_role** · recall_text · rt |
-| `Survey` | survey block (3) | task · response_json |
-
-### 4) 백업
-
-매 참가자 종료 시 `RIF_<pid>_<cond>_<ts>.json` 이 **로컬 다운로드**로도
-저장된다 (GAS 저장 실패 시 안전망). 진행자 PC에 모아두면 좋다.
-
 ## 진행자 체크리스트
 
-1. 참가자 1 → `https://<USER>.github.io/<REPO>/?pid=P01`, 참가자 2 → `?pid=P02`, … 식으로 접속. 조건은 ID 마지막 자리 짝/홀로 자동 배정 (짝수 = P, 홀수 = N).
+1. 참가자 1 → <https://haba6030.github.io/RIF_Experiment/?pid=P01>, 참가자 2 → `?pid=P02`, … 식으로 접속. 조건은 ID 마지막 자리 짝/홀로 자동 배정 (짝수 = P, 홀수 = N).
 2. Welcome 화면을 함께 읽어 주의 깊게 확인. 모니터에 다른 알림창이 뜨지 않도록 OS 알림을 꺼둘 것.
 3. 총 소요 시간 ≈ 30–32 분 (10 × 42 s study + 3 min distractor + 32 × 12 s RP + 3 min distractor + 10 × 75 s recall + survey).
 4. 종료 화면("실험이 종료되었습니다")이 뜨면 저장 완료. Google 저장이 실패해도 참가자 Downloads 폴더의 JSON 파일이 백업이다 — 진행자가 이메일로 회수.
 5. Google Sheet에서 `Metadata` 탭에 해당 pid의 row가 잡혔는지 확인 후 다음 참가자 진행.
-
-## 분석 시 첫 단추
-
-```r
-recall <- read_sheet("RIF_Data", sheet = "FreeRecall")
-# rif_role × set × condition cell-wise scoring 후
-# RIF effect = mean(NRP) - mean(RP-)
-# H1: mean(NRP) > mean(RP-)
-# H2: set='L' 에서 RIF effect ~ valence 무관
-# H3: set='H' 에서 RIF effect ~ valence(P/N) 상호작용
-```
