@@ -76,6 +76,8 @@ function save(p) {
     ['timestamp','participant_id','condition','order_idx','item_id','set','valence','rif_role','recall_text','rt']);
   const survey = getOrCreate(ss, SHEETS.SURVEY,
     ['timestamp','participant_id','condition','task','response_json','rt']);
+  const rating = getOrCreate(ss, 'ArticleRating',
+    ['timestamp','participant_id','condition','order_idx','item_id','set','valence_assigned','rif_role','rating_valence','rating_relevance','rt']);
 
   p.all_trials.forEach(t => {
     switch (t.task) {
@@ -98,6 +100,12 @@ function save(p) {
       case 'free_recall':
         recall.appendRow([ts, pid, cond, t.order_idx, t.item_id, t.set, t.valence,
                           t.rif_role, t.recall_text || '', t.rt]);
+        break;
+
+      case 'survey_article_rating':
+        rating.appendRow([ts, pid, cond, t.order_idx, t.item_id, t.set,
+                          t.valence_assigned, t.rif_role,
+                          t.rating_valence, t.rating_relevance, t.rt]);
         break;
 
       case 'survey_self_relevance':

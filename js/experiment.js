@@ -279,7 +279,6 @@ for (let r = 0; r < CONFIG.RP_ROUNDS; r++) {
         </div>`,
       questions: [{ prompt: '빈칸에 들어갈 말:', name: 'response', required: false, columns: 30 }],
       button_label: '제출',
-      trial_duration: CONFIG.RP_RESPONSE_MS,
       data: {
         task: 'retrieval_practice',
         item_id: row.item_id,
@@ -287,6 +286,15 @@ for (let r = 0; r < CONFIG.RP_ROUNDS; r++) {
         round: r + 1,
         target_answer: row.answer,
         condition: VALENCE_CONDITION
+      },
+      on_load: function() {
+        setTimeout(() => {
+          const form = document.querySelector('#jspsych-survey-text-form');
+          if (form) {
+            if (typeof form.requestSubmit === 'function') form.requestSubmit();
+            else form.dispatchEvent(new Event('submit', { cancelable: true }));
+          }
+        }, CONFIG.RP_RESPONSE_MS);
       },
       on_finish: function(d) {
         const resp = (d.response && d.response.response) || '';
@@ -335,11 +343,13 @@ recallOrder.forEach((item, idx) => {
   const m = item.body.match(/^[^.]+?(?:\.|다\.|합니다\.|있다\.|했다\.|밝혔다\.|밝혔습니다\.)/);
   const cueSentence = (m ? m[0] : item.body.slice(0, 120)).trim();
 
+  const recallTimerId = `recall-timer-${idx}`;
   timeline.push({
     type: jsPsychSurveyText,
     preamble: `
       <div class="recall-card">
-        <div class="rp-counter">${idx+1} / ${recallOrder.length}</div>
+        <div class="rp-counter">${idx+1} / ${recallOrder.length}
+          <span class="recall-timer" id="${recallTimerId}"></span></div>
         <h3 class="news-title">${item.title}</h3>
         <p class="cue-sentence">${cueSentence}</p>
         <p class="recall-instructions">위 뉴스에서 기억나는 사실을 모두 적어 주세요.</p>
@@ -348,7 +358,6 @@ recallOrder.forEach((item, idx) => {
       { prompt: '자유 회상 응답:', name: 'recall', required: false, rows: 10, columns: 70 }
     ],
     button_label: '제출 / 다음',
-    trial_duration: CONFIG.RECALL_MS,
     data: {
       task: 'free_recall',
       item_id: item.id,
@@ -357,6 +366,29 @@ recallOrder.forEach((item, idx) => {
       rif_role: rifRoleFor(item.id, VALENCE_CONDITION),
       condition: VALENCE_CONDITION,
       order_idx: idx
+    },
+    on_load: function() {
+      const total = CONFIG.RECALL_MS / 1000;
+      let left = total;
+      const el = document.getElementById(recallTimerId);
+      const paint = () => {
+        if (!el) return;
+        el.textContent = ` · 남은 시간 ${left}초`;
+        el.style.color = left <= 10 ? '#c0392b' : '#888';
+      };
+      paint();
+      const tick = setInterval(() => {
+        left -= 1;
+        paint();
+        if (left <= 0) {
+          clearInterval(tick);
+          const form = document.querySelector('#jspsych-survey-text-form');
+          if (form) {
+            if (typeof form.requestSubmit === 'function') form.requestSubmit();
+            else form.dispatchEvent(new Event('submit', { cancelable: true }));
+          }
+        }
+      }, 1000);
     },
     on_finish: function(d) {
       d.recall_text = (d.response && d.response.recall) || '';
@@ -368,58 +400,62 @@ recallOrder.forEach((item, idx) => {
 // 9. POST-SURVEY
 // ============================================================================
 
-const likert7 = ['1\n전혀\n아니다', '2', '3', '4\n보통', '5', '6', '7\n매우\n그렇다'];
+const valenceLabels   = ['1\n매우\n부정적', '2', '3', '4\n중립', '5', '6', '7\n매우\n긍정적'];
+const relevanceLabels = ['1\n매우\n약함', '2', '3', '4\n보통', '5', '6', '7\n매우\n강함'];
 
 timeline.push({
   type: jsPsychHtmlButtonResponse,
   stimulus: `
     <div style="max-width:720px; margin:0 auto; line-height:1.8;">
-      <h2 style="text-align:center;">4. 사후 설문</h2>
-      <p>마지막으로 짧은 설문에 응답해 주세요.</p>
+      <h2 style="text-align:center;">4. 기사 평정</h2>
+      <p>이제 앞서 학습했던 ${NEWS_ITEMS.length}편의 뉴스 기사를 다시 한 편씩 보여드립니다.</p>
+      <p>각 기사를 읽으신 뒤, <b>정서가</b>(매우 부정적 ↔ 매우 긍정적)와 <b>자기관련성</b>
+         (매우 약함 ↔ 매우 강함)을 7점 척도로 평정해 주세요.</p>
+      <p>준비되면 '시작'을 눌러주세요.</p>
     </div>`,
-  choices: ['시작']
+  choices: ['시작'],
+  button_html: '<button class="jspsych-btn" style="font-size:18px;padding:12px 40px;">%choice%</button>'
 });
 
-timeline.push({
-  type: jsPsychSurveyLikert,
-  preamble: '<h3 style="text-align:center;">자기관련성</h3>',
-  questions: [
-    {
-      prompt: '대학생 관련 정책 뉴스(예: 등록금, 월세 지원, 학식 등)는 평소 본인과 얼마나 관련이 있다고 느끼십니까?',
-      labels: likert7, required: true
+// Per-article rating (re-presented in independent random order)
+const ratingOrder = shuffle(NEWS_ITEMS);
+ratingOrder.forEach((item, idx) => {
+  timeline.push({
+    type: jsPsychSurveyLikert,
+    preamble: `
+      <div class="rating-card">
+        <div class="rp-counter">${idx+1} / ${ratingOrder.length}</div>
+        <h3 class="news-title">${item.title}</h3>
+        <p class="news-body" style="font-size:17px;">${item.body}</p>
+      </div>`,
+    questions: [
+      {
+        prompt: '이 기사의 내용은 전반적으로 어떻게 느껴지셨습니까? (정서가)',
+        labels: valenceLabels, required: true, name: 'valence'
+      },
+      {
+        prompt: '이 기사의 내용은 평소 본인과 얼마나 관련이 있다고 느끼십니까? (자기관련성)',
+        labels: relevanceLabels, required: true, name: 'relevance'
+      }
+    ],
+    randomize_question_order: false,
+    button_label: '다음',
+    data: {
+      task: 'survey_article_rating',
+      item_id: item.id,
+      set: item.set,
+      valence_assigned: item.valence,
+      rif_role: rifRoleFor(item.id, VALENCE_CONDITION),
+      order_idx: idx
     },
-    {
-      prompt: '소상공인 관련 정책 뉴스(예: 카드 수수료, 간이과세 등)는 평소 본인과 얼마나 관련이 있다고 느끼십니까?',
-      labels: likert7, required: true
+    on_finish: function(d) {
+      const r = d.response || {};
+      // jsPsych v7 survey-likert returns object keyed by Q0, Q1 unless `name` is set;
+      // map both to be safe.
+      d.rating_valence   = r.valence   ?? r.Q0;
+      d.rating_relevance = r.relevance ?? r.Q1;
     }
-  ],
-  randomize_question_order: false,
-  data: { task: 'survey_self_relevance' }
-});
-
-timeline.push({
-  type: jsPsychSurveyLikert,
-  preamble: '<h3 style="text-align:center;">정서가 평정</h3>',
-  questions: [
-    {
-      prompt: '학습 단계에서 제시된 청년 정책 뉴스 중 <b>긍정적</b>(지원 강화 등) 내용은 얼마나 긍정적으로 느껴졌습니까?',
-      labels: likert7, required: true
-    },
-    {
-      prompt: '학습 단계에서 제시된 청년 정책 뉴스 중 <b>부정적</b>(지원 축소 등) 내용은 얼마나 부정적으로 느껴졌습니까?',
-      labels: likert7, required: true
-    },
-    {
-      prompt: '소상공인 정책 뉴스 중 <b>긍정적</b> 내용은 얼마나 긍정적으로 느껴졌습니까?',
-      labels: likert7, required: true
-    },
-    {
-      prompt: '소상공인 정책 뉴스 중 <b>부정적</b> 내용은 얼마나 부정적으로 느껴졌습니까?',
-      labels: likert7, required: true
-    }
-  ],
-  randomize_question_order: false,
-  data: { task: 'survey_valence' }
+  });
 });
 
 timeline.push({
