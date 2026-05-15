@@ -1,0 +1,248 @@
+/* ----------------------------------------------------------------------------
+ * Styles for the RIF × Self-Relevance × Valence experiment.
+ * ---------------------------------------------------------------------------- */
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: #f5f5f5;
+  color: #222;
+  margin: 0;
+  padding: 0;
+}
+
+#jspsych-target {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.jspsych-content-wrapper {
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  margin: 40px auto;
+  max-width: 900px;
+}
+
+.jspsych-content { max-width: 100%; }
+
+.jspsych-btn {
+  background: #1f4e8c;
+  color: #fff;
+  border: none;
+  padding: 12px 30px;
+  font-size: 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'Noto Sans KR', sans-serif;
+  margin: 8px;
+  transition: background-color 0.2s ease;
+}
+.jspsych-btn:hover  { background: #163a6b; }
+.jspsych-btn:active { background: #0e2747; }
+
+/* ============================================================================
+   STUDY-PHASE NEWS CARD
+   ============================================================================ */
+
+.news-card {
+  max-width: 820px;
+  margin: 0 auto;
+  text-align: left;
+  padding: 30px 40px;
+}
+.news-counter {
+  font-size: 14px;
+  color: #888;
+  text-align: right;
+  margin-bottom: 6px;
+}
+.news-title {
+  font-size: 26px;
+  font-weight: 700;
+  text-align: center;
+  margin: 6px 0 24px;
+  line-height: 1.5;
+  color: #111;
+}
+.news-body {
+  font-size: 19px;
+  line-height: 1.85;
+  text-align: justify;
+  color: #1a1a1a;
+}
+.news-timer {
+  margin-top: 24px;
+  font-size: 14px;
+  color: #888;
+  text-align: right;
+}
+
+/* Fixation between study items */
+.fixation {
+  font-size: 60px;
+  font-weight: 500;
+  text-align: center;
+  color: #444;
+  padding: 80px 0;
+}
+
+/* ============================================================================
+   RETRIEVAL-PRACTICE CLOZE
+   ============================================================================ */
+
+.rp-card {
+  max-width: 720px;
+  margin: 0 auto;
+  text-align: left;
+}
+.rp-counter {
+  font-size: 14px;
+  color: #888;
+  text-align: right;
+  margin-bottom: 10px;
+}
+.rp-question {
+  font-size: 22px;
+  line-height: 1.8;
+  text-align: left;
+  color: #111;
+  margin: 30px 0;
+}
+.rp-blank {
+  display: inline-block;
+  min-width: 100px;
+  border-bottom: 3px solid #1f4e8c;
+  color: #1f4e8c;
+  text-align: center;
+  letter-spacing: 2px;
+  font-weight: 700;
+}
+
+/* ============================================================================
+   RECALL CARD
+   ============================================================================ */
+
+.recall-card {
+  max-width: 760px;
+  margin: 0 auto;
+  text-align: left;
+}
+.recall-card .news-title { font-size: 22px; margin: 8px 0 12px; }
+.cue-sentence {
+  font-size: 17px;
+  line-height: 1.7;
+  background: #f1f4f9;
+  padding: 14px 18px;
+  border-left: 3px solid #1f4e8c;
+  border-radius: 4px;
+  margin: 12px 0 22px;
+}
+.recall-instructions {
+  font-size: 15px;
+  color: #555;
+  margin-bottom: 14px;
+}
+
+/* ============================================================================
+   SURVEYS
+   ============================================================================ */
+
+.jspsych-survey-likert-statement {
+  font-size: 17px;
+  font-weight: 500;
+  margin-bottom: 14px;
+  text-align: left;
+  line-height: 1.6;
+}
+.jspsych-survey-likert-opts {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin: 28px auto 32px;
+  width: 760px !important;
+  max-width: 92vw;
+  flex-wrap: nowrap;
+}
+.jspsych-survey-likert-opt {
+  flex: 0 0 auto;
+  text-align: center;
+  width: 90px;
+}
+.jspsych-survey-likert-opt label {
+  display: block;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1.3;
+  padding: 8px 4px;
+  white-space: pre-line;
+}
+.jspsych-survey-likert-opt input[type="radio"] {
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  margin-bottom: 6px;
+  transform: scale(1.4);
+}
+
+.jspsych-survey-text input[type="text"],
+.jspsych-survey-text textarea {
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 16px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%;
+  box-sizing: border-box;
+  line-height: 1.6;
+}
+.jspsych-survey-text textarea {
+  resize: vertical;
+  min-height: 160px;
+}
+
+/* ============================================================================
+   SPATIAL 2-BACK GRID
+   ============================================================================ */
+
+.twoback-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 100px);
+  grid-template-rows: repeat(3, 100px);
+  gap: 8px;
+  margin: 60px auto 30px;
+  justify-content: center;
+}
+.twoback-cell {
+  width: 100px;
+  height: 100px;
+  background: #f0f0f0;
+  border: 2px solid #888;
+  border-radius: 6px;
+}
+.twoback-cell.active {
+  background: #1f4e8c;
+  border-color: #0a2548;
+}
+
+/* ============================================================================
+   RESPONSIVE
+   ============================================================================ */
+
+@media (max-width: 768px) {
+  .jspsych-content-wrapper { padding: 20px; margin: 20px auto; }
+  .news-title { font-size: 22px; }
+  .news-body  { font-size: 17px; line-height: 1.75; }
+  .rp-question { font-size: 19px; }
+  .jspsych-survey-likert-opts { width: 90vw !important; }
+  .jspsych-survey-likert-opt  { width: 55px; }
+  .jspsych-survey-likert-opt input[type="radio"] {
+    width: 28px; height: 28px; transform: scale(1.2);
+  }
+  .twoback-grid {
+    grid-template-columns: repeat(3, 80px);
+    grid-template-rows: repeat(3, 80px);
+  }
+  .twoback-cell { width: 80px; height: 80px; }
+}
