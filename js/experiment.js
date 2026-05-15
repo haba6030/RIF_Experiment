@@ -52,7 +52,7 @@ console.log('Participant:', participant_id, 'Condition:', VALENCE_CONDITION);
 
 // Replace with your deployed Apps Script Web app URL.
 // Production target: GitHub Pages → Google Apps Script → Google Sheets.
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzf8J6AXkg2X-TmEDFB8AG7duNf6-fvxvuubqnbL4dgk3OguY2Baaj-t2MOH127L0llnQ/exec';
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxQpKbsKF_v_vUWlVsVqhElzg6dDRZAvroTSf2iDmP9xaYOgrOprKSbTuNxoOfWlpTdCg/exec';
 
 // Local Express fallback (server.js). Only used when running on localhost.
 const IS_LOCAL = ['localhost', '127.0.0.1'].includes(window.location.hostname);
