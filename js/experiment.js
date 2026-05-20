@@ -22,7 +22,7 @@
 const CONFIG = {
   STUDY_BODY_MS:      40000,
   STUDY_ISI_MS:        2000,
-  DISTRACTOR_MS:      90000,    // 1.5 minutes per distractor block (45 trials × 2000ms)
+  DISTRACTOR_MS:      60000,    // 1.5 minutes per distractor block (30 trials × 2000ms)
   RP_ROUNDS:              2,    // Anderson 1994 used 3; piloting at 2 to fit time
   RP_RESPONSE_MS:     12000,    // per cloze
   RECALL_MS:          75000,    // per news item (10 × 75 = 12.5 m, see note)
