@@ -22,7 +22,7 @@
 const CONFIG = {
   STUDY_BODY_MS:      40000,
   STUDY_ISI_MS:        2000,
-  DISTRACTOR_MS:     180000,    // 3 minutes per distractor block
+  DISTRACTOR_MS:      90000,    // 1.5 minutes per distractor block (45 trials × 2000ms)
   RP_ROUNDS:              2,    // Anderson 1994 used 3; piloting at 2 to fit time
   RP_RESPONSE_MS:     12000,    // per cloze
   RECALL_MS:          75000,    // per news item (10 × 75 = 12.5 m, see note)
@@ -102,14 +102,14 @@ timeline.push({
       <h1 style="text-align:center;">뉴스 이해도 및 정책 인지 연구</h1>
       <p>안녕하세요. 본 연구는 <b>최근 발표된 정책 뉴스에 대한 이해도와 기억</b>을
          알아보기 위한 실험입니다.</p>
-      <p>전체 소요 시간은 약 <b>25분</b>이며, 다음 순서로 진행됩니다.</p>
+      <p>전체 소요 시간은 약 <b>35분</b>이며, 다음 순서로 진행됩니다.</p>
       <ol>
         <li>뉴스 본문 학습 (약 7분)</li>
-        <li>간단한 기억 분산 과제 (약 1분)</li>
-        <li>뉴스 세부 사실 확인 과제 (약 6분)</li>
-        <li>두 번째 분산 과제 (약 1분)</li>
-        <li>뉴스 자유 회상 (약 8분)</li>
-        <li>사후 설문 (약 1분)</li>
+        <li>기억 분산 과제 (약 1~2분)</li>
+        <li>뉴스 세부 사실 확인 과제 (약 8분)</li>
+        <li>두 번째 분산 과제 (약 1~2분)</li>
+        <li>뉴스 자유 회상 (약 13분)</li>
+        <li>사후 설문 (약 2분)</li>
       </ol>
       <p>모든 응답은 익명 처리되며 학술 연구 목적 외에는 사용되지 않습니다.</p>
       <p>참여에 동의하시면 아래 '시작' 버튼을 눌러주세요.</p>
@@ -232,8 +232,8 @@ timeline.push({
       <p>각 문항은 최대 <b>${CONFIG.RP_RESPONSE_MS/1000}초</b> 동안 표시되며, 빈칸에 들어갈
          내용을 입력 후 <b>Enter</b> 또는 '제출' 버튼을 누르면 다음으로 넘어갑니다.</p>
       <p>총 ${rpTrials.length * CONFIG.RP_ROUNDS}문항이 출제됩니다 (같은 문항을
-         ${CONFIG.RP_ROUNDS}회 반복).</p>
-      <p>준비되면 '시작'을 눌러주세요.</p>
+         ${CONFIG.RP_ROUNDS}회 반복). 매 8문항이 끝나면 정답 확인 화면이 제시됩니다.</p>
+      <p>전체 소요 시간은 약 <b>8분</b>입니다. 준비되면 '시작'을 눌러주세요.</p>
     </div>`,
   choices: ['시작'],
   button_html: '<button class="jspsych-btn" style="font-size:18px;padding:12px 40px;">%choice%</button>'
