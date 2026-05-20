@@ -261,6 +261,8 @@ function shuffleRPOrder(items, differentFrom) {
   return shuffle(items);
 }
 
+const RP_FEEDBACK_CYCLE = 8; // feedback after every 8 questions (half of 16 per round → 4 total)
+
 const rpOrders = [];
 for (let r = 0; r < CONFIG.RP_ROUNDS; r++) {
   rpOrders.push(shuffleRPOrder(rpTrials, r === 0 ? null : rpOrders[r - 1]));
@@ -268,7 +270,12 @@ for (let r = 0; r < CONFIG.RP_ROUNDS; r++) {
 
 for (let r = 0; r < CONFIG.RP_ROUNDS; r++) {
   const order = rpOrders[r];
+  let batchRows = [];
+
   order.forEach((row, idx) => {
+    let autoSubmitTimer = null; // fix: store ref so on_finish can cancel it
+    batchRows.push(row);
+
     timeline.push({
       type: jsPsychSurveyText,
       preamble: `
@@ -288,7 +295,7 @@ for (let r = 0; r < CONFIG.RP_ROUNDS; r++) {
         condition: VALENCE_CONDITION
       },
       on_load: function() {
-        setTimeout(() => {
+        autoSubmitTimer = setTimeout(() => {
           const form = document.querySelector('#jspsych-survey-text-form');
           if (form) {
             if (typeof form.requestSubmit === 'function') form.requestSubmit();
@@ -297,12 +304,64 @@ for (let r = 0; r < CONFIG.RP_ROUNDS; r++) {
         }, CONFIG.RP_RESPONSE_MS);
       },
       on_finish: function(d) {
+        clearTimeout(autoSubmitTimer); // fix: cancel timer so it never fires on the next trial
         const resp = (d.response && d.response.response) || '';
         d.response_text = resp.trim();
         d.match = (resp.trim().replace(/\s/g,'') ===
                    row.answer.replace(/\s/g,'')) ? 1 : 0;
       }
     });
+
+    // Insert delayed feedback after every RP_FEEDBACK_CYCLE questions (or at round end)
+    const isEndOfBatch = (idx + 1) % RP_FEEDBACK_CYCLE === 0 || idx === order.length - 1;
+    if (isEndOfBatch) {
+      const currentBatchRows = batchRows.slice(); // snapshot before reset
+      const batchSize = currentBatchRows.length;
+
+      timeline.push({
+        type: jsPsychHtmlButtonResponse,
+        stimulus: function() {
+          // Evaluated at runtime: query the last batchSize RP trials for this round
+          const rpData = jsPsych.data.get()
+            .filter({ task: 'retrieval_practice', round: r + 1 })
+            .values()
+            .slice(-batchSize);
+
+          let html = `<div style="max-width:720px;margin:0 auto;line-height:1.7;">
+            <h3 style="text-align:center;margin-bottom:20px;">정답 확인</h3>`;
+
+          currentBatchRows.forEach((batchRow, i) => {
+            const trial = rpData[i] || {};
+            const userAnswer = trial.response_text || '(시간 초과 / 무응답)';
+            const target = batchRow.answer;
+            const isMatch = trial.match === 1;
+            html += `
+              <div style="margin:10px 0;padding:14px 16px;border-radius:8px;
+                background:${isMatch ? '#e8f5e9' : '#fff3e0'};
+                border-left:5px solid ${isMatch ? '#43a047' : '#fb8c00'};">
+                <p style="margin:0 0 6px;font-size:16px;">
+                  ${batchRow.question.replace('____',
+                    `<strong style="color:#1f4e8c;">${target}</strong>`)}
+                </p>
+                <p style="margin:0;font-size:14px;color:#555;">
+                  내 답: <em>${userAnswer}</em>
+                  &nbsp;&nbsp;<span style="font-weight:700;color:${isMatch ? '#43a047' : '#fb8c00'};">
+                    ${isMatch ? '[정답]' : '[오답]'}
+                  </span>
+                </p>
+              </div>`;
+          });
+
+          html += '</div>';
+          return html;
+        },
+        choices: ['계속'],
+        button_html: '<button class="jspsych-btn" style="font-size:16px;padding:10px 32px;margin-top:20px;">%choice%</button>',
+        data: { task: 'rp_feedback', round: r + 1 }
+      });
+
+      batchRows = []; // reset for next batch
+    }
   });
 }
 
