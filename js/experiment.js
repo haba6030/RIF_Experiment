@@ -215,6 +215,9 @@ timeline.push(...dist1.timeline);
 
 const practicedIds = PRACTICE_IDS[VALENCE_CONDITION]; // e.g. ['A1','A2','B1','B2']
 
+// Lookup table: item_id → NEWS item (used to show article title on RP cards)
+const NEWS_BY_ID = Object.fromEntries(NEWS_ITEMS.map(n => [n.id, n]));
+
 // Build a flat list of 16 cloze trials
 const rpTrials = [];
 practicedIds.forEach(id => {
@@ -281,8 +284,11 @@ for (let r = 0; r < CONFIG.RP_ROUNDS; r++) {
       preamble: `
         <div class="rp-card">
           <div class="rp-counter">Round ${r+1} · ${idx+1} / ${order.length}</div>
+          <h3 class="rp-article-title" style="margin:6px 0 14px;color:#1f4e8c;font-size:18px;">
+            기사: ${NEWS_BY_ID[row.item_id].title}
+          </h3>
           <p class="rp-question">${row.question.replace('____',
-              '<span class="rp-blank">_____</span>')}</p>
+              '<span class="rp-blank">(&nbsp;&nbsp;&nbsp;&nbsp;)</span>')}</p>
         </div>`,
       questions: [{ prompt: '빈칸에 들어갈 말:', name: 'response', required: false, columns: 30 }],
       button_label: '제출',
@@ -403,6 +409,7 @@ recallOrder.forEach((item, idx) => {
   const cueSentence = (m ? m[0] : item.body.slice(0, 120)).trim();
 
   const recallTimerId = `recall-timer-${idx}`;
+  let recallTick = null; // fix: capture interval ref so on_finish can cancel it
   timeline.push({
     type: jsPsychSurveyText,
     preamble: `
@@ -436,11 +443,12 @@ recallOrder.forEach((item, idx) => {
         el.style.color = left <= 10 ? '#c0392b' : '#888';
       };
       paint();
-      const tick = setInterval(() => {
+      recallTick = setInterval(() => {
         left -= 1;
         paint();
         if (left <= 0) {
-          clearInterval(tick);
+          clearInterval(recallTick);
+          recallTick = null;
           const form = document.querySelector('#jspsych-survey-text-form');
           if (form) {
             if (typeof form.requestSubmit === 'function') form.requestSubmit();
@@ -450,6 +458,13 @@ recallOrder.forEach((item, idx) => {
       }, 1000);
     },
     on_finish: function(d) {
+      // fix: cancel timer so a stale tick from this trial cannot auto-submit
+      // the next trial's form (this was the cause of recall items being
+      // skipped before the timer ran out).
+      if (recallTick !== null) {
+        clearInterval(recallTick);
+        recallTick = null;
+      }
       d.recall_text = (d.response && d.response.recall) || '';
     }
   });
@@ -485,7 +500,9 @@ ratingOrder.forEach((item, idx) => {
       <div class="rating-card">
         <div class="rp-counter">${idx+1} / ${ratingOrder.length}</div>
         <h3 class="news-title">${item.title}</h3>
-        <p class="news-body" style="font-size:17px;">${item.body}</p>
+        <p class="rating-keywords" style="font-size:17px;color:#555;margin-top:8px;">
+          핵심 키워드: <b>${item.keywords}</b>
+        </p>
       </div>`,
     questions: [
       {
