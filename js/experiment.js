@@ -232,8 +232,8 @@ timeline.push({
       <p>각 문항은 최대 <b>${CONFIG.RP_RESPONSE_MS/1000}초</b> 동안 표시되며, 빈칸에 들어갈
          내용을 입력 후 <b>Enter</b> 또는 '제출' 버튼을 누르면 다음으로 넘어갑니다.</p>
       <p>총 ${rpTrials.length * CONFIG.RP_ROUNDS}문항이 출제됩니다 (같은 문항을
-         ${CONFIG.RP_ROUNDS}회 반복). 매 8문항이 끝나면 정답 확인 화면이 제시됩니다.</p>
-      <p>전체 소요 시간은 약 <b>8분</b>입니다. 준비되면 '시작'을 눌러주세요.</p>
+         ${CONFIG.RP_ROUNDS}회 반복). 매 6문항이 끝나면 정답 확인 화면이 제시됩니다.</p>
+      <p>전체 소요 시간은 약 <b>6분</b>입니다. 준비되면 '시작'을 눌러주세요.</p>
     </div>`,
   choices: ['시작'],
   button_html: '<button class="jspsych-btn" style="font-size:18px;padding:12px 40px;">%choice%</button>'
@@ -261,7 +261,7 @@ function shuffleRPOrder(items, differentFrom) {
   return shuffle(items);
 }
 
-const RP_FEEDBACK_CYCLE = 8; // feedback after every 8 questions (half of 16 per round → 4 total)
+const RP_FEEDBACK_CYCLE = 6; // feedback after every 6 questions (half of 12 per round → 4 total across 2 rounds)
 
 const rpOrders = [];
 for (let r = 0; r < CONFIG.RP_ROUNDS; r++) {

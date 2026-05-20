@@ -24,8 +24,8 @@
   - `P` → RP+ targets = `{A1, A2, B1, B2}` (positives)
   - `N` → RP+ targets = `{A3, A4, B3, B4}` (negatives)
 - **Within-subjects**:
-  - Self-relevance: High set (A, 청년 정책) · Low set (B, 소상공인 정책)
-  - RIF role: `RP+` · `RP-` · `NRP` (neutrals `CA1`, `CB1`)
+  - Self-relevance: High set (A, 청년 정책) · Low set (B, 소상공인 정책) · Identity-irrelevant control (C, 연예)
+  - RIF role: `RP+` · `RP-` · `NRP` (identity-irrelevant valenced controls `C1` 긍정, `C2` 부정)
 
 `recall` 데이터의 `rif_role` 칼럼이 분석 시 핵심 contrast.
 
