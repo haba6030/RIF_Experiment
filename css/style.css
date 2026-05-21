@@ -243,6 +243,28 @@ body {
   border-color: #0a2548;
 }
 
+/* Feedback area: reserved space below the grid so layout doesn't shift
+   between trials with vs. without feedback. */
+.twoback-feedback {
+  height: 40px;
+  margin: 14px auto 24px;
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+  line-height: 40px;
+  letter-spacing: 1px;
+  visibility: hidden;
+  user-select: none;
+}
+.twoback-feedback.correct {
+  visibility: visible;
+  color: #1f7a3a;
+}
+.twoback-feedback.wrong {
+  visibility: visible;
+  color: #b3261e;
+}
+
 /* ============================================================================
    RESPONSIVE
    ============================================================================ */
@@ -262,4 +284,10 @@ body {
     grid-template-rows: repeat(3, 80px);
   }
   .twoback-cell { width: 80px; height: 80px; }
+  .twoback-feedback {
+    height: 32px;
+    line-height: 32px;
+    font-size: 20px;
+    margin: 10px auto 18px;
+  }
 }
