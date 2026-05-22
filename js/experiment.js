@@ -80,6 +80,51 @@ jsPsych.data.addProperties({
   condition: VALENCE_CONDITION
 });
 
+// ----------------------------------------------------------------------------
+// Experimenter skip key: '='
+//   Use during piloting/debugging to bypass remaining time on the current
+//   trial without restarting. NOT documented to participants.
+//     · 2-back distractor block → skip the whole block (endCurrentTimeline)
+//     · survey-text / survey-likert form → submit current form (preserves
+//       whatever was typed so far)
+//     · any other trial (study body, ISI, instruction screens) → finishTrial
+// ----------------------------------------------------------------------------
+document.addEventListener('keydown', function(e) {
+  if (e.key !== '=') return;
+  // Don't hijack '=' while the user is typing into a text field
+  // (RP cloze answer, free-recall textarea, demographics).
+  const t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) {
+    return;
+  }
+  e.preventDefault();
+  e.stopPropagation();
+
+  // 1) Inside a 2-back block? Skip the entire procedure, not just one 2 s trial.
+  if (document.querySelector('.twoback-grid')) {
+    jsPsych.endCurrentTimeline();
+    console.log('[skip] = pressed during 2-back — skipping remainder of block');
+    return;
+  }
+
+  // 2) Active jsPsych form on screen? Submit it so the partial response is saved.
+  const form = document.querySelector(
+    '#jspsych-survey-text-form, #jspsych-survey-likert-form'
+  );
+  if (form) {
+    if (typeof form.requestSubmit === 'function') form.requestSubmit();
+    else form.dispatchEvent(new Event('submit', { cancelable: true }));
+    console.log('[skip] = pressed — submitted current form');
+    return;
+  }
+
+  // 3) Fallback: end whatever trial is active (study body, ISI, instructions).
+  if (typeof jsPsych !== 'undefined' && jsPsych.finishTrial) {
+    jsPsych.finishTrial({ experimenter_skip: true });
+    console.log('[skip] = pressed — finishTrial');
+  }
+}, true);  // capture phase so we fire before plugin keyboard handlers
+
 function shuffle(arr) {
   const a = arr.slice();
   for (let i = a.length - 1; i > 0; i--) {
