@@ -85,18 +85,27 @@ jsPsych.data.addProperties({
 //   Use during piloting/debugging to bypass remaining time on the current
 //   trial without restarting. NOT documented to participants.
 //     · 2-back distractor block → skip the whole block (endCurrentTimeline)
-//     · survey-text / survey-likert form → submit current form (preserves
-//       whatever was typed so far)
-//     · any other trial (study body, ISI, instruction screens) → finishTrial
+//     · study body / ISI / instruction screens → finishTrial
+//   Explicitly DISABLED on response-collecting trials (RP cloze, free recall,
+//   article rating, demographics) so participant answers are never bypassed.
 // ----------------------------------------------------------------------------
 document.addEventListener('keydown', function(e) {
   if (e.key !== '=') return;
-  // Don't hijack '=' while the user is typing into a text field
-  // (RP cloze answer, free-recall textarea, demographics).
+
+  // Disabled on any active jsPsych response form (RP cloze, free recall,
+  // article rating, demographics) — these must collect a real response.
+  if (document.querySelector(
+    '#jspsych-survey-text-form, #jspsych-survey-likert-form'
+  )) {
+    return;
+  }
+
+  // Also ignore if focus is in any text field (defensive — same intent).
   const t = e.target;
   if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) {
     return;
   }
+
   e.preventDefault();
   e.stopPropagation();
 
@@ -107,18 +116,7 @@ document.addEventListener('keydown', function(e) {
     return;
   }
 
-  // 2) Active jsPsych form on screen? Submit it so the partial response is saved.
-  const form = document.querySelector(
-    '#jspsych-survey-text-form, #jspsych-survey-likert-form'
-  );
-  if (form) {
-    if (typeof form.requestSubmit === 'function') form.requestSubmit();
-    else form.dispatchEvent(new Event('submit', { cancelable: true }));
-    console.log('[skip] = pressed — submitted current form');
-    return;
-  }
-
-  // 3) Fallback: end whatever trial is active (study body, ISI, instructions).
+  // 2) Fallback: end whatever trial is active (study body, ISI, instructions).
   if (typeof jsPsych !== 'undefined' && jsPsych.finishTrial) {
     jsPsych.finishTrial({ experimenter_skip: true });
     console.log('[skip] = pressed — finishTrial');
